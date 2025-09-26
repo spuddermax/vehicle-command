@@ -29,6 +29,7 @@ require (
 	github.com/raff/goble v0.0.0-20190909174656-72afc67d6a99 // indirect
 	github.com/sirupsen/logrus v1.5.0 // indirect
 	golang.org/x/sys v0.8.0 // indirect
+	gopkg.in/fsnotify.v1 v1.4.7 // indirect
 )
 
 replace github.com/JuulLabs-OSS/cbgo => github.com/tinygo-org/cbgo v0.0.4
