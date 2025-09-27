@@ -63,7 +63,12 @@ function Card({
             {...props}
         >
             {title && (
-                <h2 className="card-title" onClick={handleTitleClick}>{title}</h2>
+                <h2 className="card-title" onClick={handleTitleClick}>
+                    <span className="card-title-text">{title}</span>
+                    <span className="card-expand-icon">
+                        {isExpanded ? '🔍➖' : '🔍➕'}
+                    </span>
+                </h2>
             )}
             <div className="card-content">
                 {children}
@@ -304,7 +309,6 @@ function Header({ connectionStatus, onConnect, isLoading, activeTab, onTabChange
                         ))}
                     </div>
                 </div>
-
                 
                 <div className="connection-status">
                     <div 
@@ -556,6 +560,7 @@ function StatusDisplay({ hvacState, connectionStatus }) {
 // Main HVAC Control Application
 function TeslaHVACApp() {
     const [connectionStatus, setConnectionStatus] = useState('disconnected');
+    const [brightness, setBrightness] = useState(100);
     const [hvacState, setHvacState] = useState({
         isOn: false,
         driverTemp: 72.0, // 72°F = 22°C
@@ -721,6 +726,10 @@ function TeslaHVACApp() {
         }
     }, [connectionStatus]);
 
+    const handleBrightnessChange = useCallback((newBrightness) => {
+        setBrightness(newBrightness);
+    }, []);
+
     // Audio Control Functions
     const setVolume = useCallback(async (volume) => {
         // Update UI immediately for instant feedback
@@ -824,6 +833,34 @@ function TeslaHVACApp() {
                 
                 {renderTabContent()}
             </main>
+            
+            {/* Brightness Overlay - covers entire page */}
+            <div 
+                className={`brightness-overlay ${brightness < 100 ? 'active' : ''}`}
+                style={{
+                    background: `rgba(0, 0, 0, ${(100 - brightness) / 100})`
+                }}
+            />
+            
+            {/* Brightness Control - positioned absolutely above overlay */}
+            <div 
+                className="brightness-control-absolute"
+                style={{
+                    opacity: Math.max(0.2, brightness / 100)
+                }}
+            >
+                <div className="brightness-slider-container">
+                    <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={brightness}
+                        onChange={(e) => handleBrightnessChange(parseInt(e.target.value))}
+                        className="brightness-slider"
+                    />
+                    <div className="brightness-label">BRIGHTNESS</div>
+                </div>
+            </div>
         </div>
     );
 }

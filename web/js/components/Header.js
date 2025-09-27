@@ -1,7 +1,7 @@
 const { useState, useEffect, useCallback } = React;
 
 // Header Component
-function Header({ connectionStatus, onConnect, isLoading, activeTab, onTabChange }) {
+function Header({ connectionStatus, onConnect, isLoading, activeTab, onTabChange, brightness, onBrightnessChange }) {
     const getStatusColor = () => {
         switch (connectionStatus) {
             case 'connected': return '#00ff88';
@@ -44,6 +44,19 @@ function Header({ connectionStatus, onConnect, isLoading, activeTab, onTabChange
                 </div>
             </div>
 
+                <div className="brightness-control">
+                    <div className="brightness-slider-container">
+                        <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            value={brightness}
+                            onChange={(e) => onBrightnessChange(parseInt(e.target.value))}
+                            className="brightness-slider"
+                        />
+                        <div className="brightness-label">BRIGHTNESS</div>
+                    </div>
+                </div>
                 
                 <div className="connection-status">
                     <div 
