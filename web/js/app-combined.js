@@ -1,5 +1,23 @@
 const { useState, useEffect, useCallback } = React;
 
+// Global state for card expansion
+let expandedCardId = null;
+const cardExpansionListeners = new Set();
+
+function setExpandedCard(cardId) {
+    expandedCardId = cardId;
+    cardExpansionListeners.forEach(listener => listener(cardId));
+}
+
+function getExpandedCard() {
+    return expandedCardId;
+}
+
+function addExpansionListener(listener) {
+    cardExpansionListeners.add(listener);
+    return () => cardExpansionListeners.delete(listener);
+}
+
 // Standardized Card Component
 function Card({ 
     title, 
@@ -9,6 +27,30 @@ function Card({
     className = '',
     ...props 
 }) {
+    const [isExpanded, setIsExpanded] = useState(false);
+    const cardId = React.useMemo(() => Math.random().toString(36), []);
+
+    const handleTitleClick = () => {
+        const newExpanded = !isExpanded;
+        setIsExpanded(newExpanded);
+        
+        if (newExpanded) {
+            setExpandedCard(cardId);
+        } else {
+            setExpandedCard(null);
+        }
+    };
+
+    // Listen for other card expansions
+    React.useEffect(() => {
+        const removeListener = addExpansionListener((expandedId) => {
+            if (expandedId !== cardId) {
+                setIsExpanded(false);
+            }
+        });
+        return removeListener;
+    }, [cardId]);
+
     const cardStyle = {
         borderColor: borderColor,
         backgroundColor: backgroundColor
@@ -16,12 +58,12 @@ function Card({
 
     return (
         <div 
-            className={`card ${className}`}
+            className={`card ${className} ${isExpanded ? 'expanded' : ''}`}
             style={cardStyle}
             {...props}
         >
             {title && (
-                <h2 className="card-title">{title}</h2>
+                <h2 className="card-title" onClick={handleTitleClick}>{title}</h2>
             )}
             <div className="card-content">
                 {children}
@@ -129,16 +171,35 @@ function TemperatureGauge({ temperature, label = "MOTOR" }) {
     );
 }
 
+// Grid with Overlay Component
+function GridWithOverlay({ children }) {
+    const [hasExpandedCard, setHasExpandedCard] = useState(false);
+
+    React.useEffect(() => {
+        const removeListener = addExpansionListener((expandedId) => {
+            setHasExpandedCard(expandedId !== null);
+        });
+        return removeListener;
+    }, []);
+
+    return (
+        <div className="controls-grid">
+            <div className={`grid-overlay ${hasExpandedCard ? 'active' : ''}`}></div>
+            {children}
+        </div>
+    );
+}
+
 // Main Dashboard Component
 function Dashboard({ dashboardState }) {
     return (
-        <div className="controls-grid">
+        <GridWithOverlay>
             <Speedometer speed={dashboardState.speed} />
             <BatteryGauge batteryLevel={dashboardState.batteryLevel} range={dashboardState.range} />
             <PowerMeter power={dashboardState.power} />
             <TemperatureGauge temperature={dashboardState.motorTemp} label="MOTOR" />
             <TemperatureGauge temperature={dashboardState.batteryTemp} label="BATTERY" />
-        </div>
+        </GridWithOverlay>
     );
 }
 
@@ -283,8 +344,8 @@ function ErrorMessage({ message, onDismiss }) {
 function TemperatureControl({ driverTemp, passengerTemp, onTemperatureChange, disabled }) {
     const handleTempChange = (side, delta) => {
         const newTemp = side === 'driver' 
-            ? Math.max(59, Math.min(86, driverTemp + delta)) // 59°F to 86°F range
-            : Math.max(59, Math.min(86, passengerTemp + delta)); // 59°F to 86°F range
+            ? Math.max(60, Math.min(85, driverTemp + delta)) // 60°F to 85°F range
+            : Math.max(60, Math.min(85, passengerTemp + delta)); // 60°F to 85°F range
         
         if (side === 'driver') {
             onTemperatureChange(newTemp, passengerTemp);
@@ -302,13 +363,21 @@ function TemperatureControl({ driverTemp, passengerTemp, onTemperatureChange, di
                     <div className="temp-slider-container">
                         <input
                             type="range"
-                            min="59"
-                            max="86"
+                            min="60"
+                            max="85"
                             value={driverTemp}
                             onChange={(e) => handleTempChange('driver', parseFloat(e.target.value) - driverTemp)}
                             disabled={disabled}
                             className="temp-slider"
                         />
+                        <div className="temp-labels">
+                            <span onClick={() => handleTempChange('driver', 60 - driverTemp)}>60</span>
+                            <span onClick={() => handleTempChange('driver', 65 - driverTemp)}>65</span>
+                            <span onClick={() => handleTempChange('driver', 70 - driverTemp)}>70</span>
+                            <span onClick={() => handleTempChange('driver', 75 - driverTemp)}>75</span>
+                            <span onClick={() => handleTempChange('driver', 80 - driverTemp)}>80</span>
+                            <span onClick={() => handleTempChange('driver', 85 - driverTemp)}>85</span>
+                        </div>
                     </div>
                 </div>
                 
@@ -320,13 +389,21 @@ function TemperatureControl({ driverTemp, passengerTemp, onTemperatureChange, di
                     <div className="temp-slider-container">
                         <input
                             type="range"
-                            min="59"
-                            max="86"
+                            min="60"
+                            max="85"
                             value={passengerTemp}
                             onChange={(e) => handleTempChange('passenger', parseFloat(e.target.value) - passengerTemp)}
                             disabled={disabled}
                             className="temp-slider"
                         />
+                        <div className="temp-labels">
+                            <span onClick={() => handleTempChange('passenger', 60 - passengerTemp)}>60</span>
+                            <span onClick={() => handleTempChange('passenger', 65 - passengerTemp)}>65</span>
+                            <span onClick={() => handleTempChange('passenger', 70 - passengerTemp)}>70</span>
+                            <span onClick={() => handleTempChange('passenger', 75 - passengerTemp)}>75</span>
+                            <span onClick={() => handleTempChange('passenger', 80 - passengerTemp)}>80</span>
+                            <span onClick={() => handleTempChange('passenger', 85 - passengerTemp)}>85</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -398,14 +475,24 @@ function AirflowControl({ airflowPattern, onAirflowChange, disabled }) {
 function AutoModeControl({ autoMode, onToggle, disabled }) {
     return (
         <Card title="AUTO MODE" className="auto-control">
-            <button
-                className={`auto-toggle ${autoMode ? 'active' : ''}`}
-                onClick={onToggle}
-                disabled={disabled}
-            >
-                <div className="auto-icon">{autoMode ? '🔄' : '⏸️'}</div>
-                <div className="auto-label">{autoMode ? 'ON' : 'OFF'}</div>
-            </button>
+            <div className="auto-buttons">
+                <button
+                    className={`auto-button auto-on ${autoMode ? 'active' : ''}`}
+                    onClick={() => onToggle(true)}
+                    disabled={disabled}
+                >
+                    <div className="auto-icon">🔄</div>
+                    <div className="auto-label">ON</div>
+                </button>
+                <button
+                    className={`auto-button auto-off ${!autoMode ? 'active' : ''}`}
+                    onClick={() => onToggle(false)}
+                    disabled={disabled}
+                >
+                    <div className="auto-icon">⏸️</div>
+                    <div className="auto-label">OFF</div>
+                </button>
+            </div>
         </Card>
     );
 }
@@ -413,15 +500,25 @@ function AutoModeControl({ autoMode, onToggle, disabled }) {
 // Climate Toggle Component
 function ClimateToggle({ isOn, onToggle, disabled }) {
     return (
-        <Card title="CLIMATE" className="climate-toggle">
-            <button
-                className={`climate-button ${isOn ? 'active' : ''}`}
-                onClick={onToggle}
-                disabled={disabled}
-            >
-                <div className="climate-icon">{isOn ? '🌡️' : '⭕'}</div>
-                <div className="climate-label">{isOn ? 'ON' : 'OFF'}</div>
-            </button>
+        <Card title="CLIMATE SYSTEM" className="climate-toggle">
+            <div className="climate-buttons">
+                <button
+                    className={`climate-button climate-on ${isOn ? 'active' : ''}`}
+                    onClick={() => onToggle(true)}
+                    disabled={disabled}
+                >
+                    <div className="climate-icon">🌡️</div>
+                    <div className="climate-label">ON</div>
+                </button>
+                <button
+                    className={`climate-button climate-off ${!isOn ? 'active' : ''}`}
+                    onClick={() => onToggle(false)}
+                    disabled={disabled}
+                >
+                    <div className="climate-icon">⭕</div>
+                    <div className="climate-label">OFF</div>
+                </button>
+            </div>
         </Card>
     );
 }
@@ -588,13 +685,13 @@ function TeslaHVACApp() {
         }
     }, [connectionStatus]);
 
-    const toggleAutoMode = useCallback(async () => {
+    const toggleAutoMode = useCallback(async (autoMode) => {
         if (connectionStatus !== 'connected') return;
         
         // Update UI immediately for instant feedback
         setHvacState(prev => ({
             ...prev,
-            autoMode: !prev.autoMode
+            autoMode: autoMode
         }));
         
         // Send to backend in background (no loading state)
@@ -602,17 +699,17 @@ function TeslaHVACApp() {
             // Simulate API call without blocking UI
             await new Promise(resolve => setTimeout(resolve, 50));
         } catch (err) {
-            setError('Failed to toggle auto mode');
+            setError('Failed to set auto mode');
         }
     }, [connectionStatus]);
 
-    const toggleClimate = useCallback(async () => {
+    const toggleClimate = useCallback(async (isOn) => {
         if (connectionStatus !== 'connected') return;
         
         // Update UI immediately for instant feedback
         setHvacState(prev => ({
             ...prev,
-            isOn: !prev.isOn
+            isOn: isOn
         }));
         
         // Send to backend in background (no loading state)
@@ -620,7 +717,7 @@ function TeslaHVACApp() {
             // Simulate API call without blocking UI
             await new Promise(resolve => setTimeout(resolve, 100));
         } catch (err) {
-            setError('Failed to toggle climate');
+            setError('Failed to set climate system');
         }
     }, [connectionStatus]);
 
@@ -654,7 +751,7 @@ function TeslaHVACApp() {
         } else if (activeTab === 'hvac') {
             return (
                 <>
-                    <div className="controls-grid">
+                    <GridWithOverlay>
                         <TemperatureControl
                             driverTemp={hvacState.driverTemp}
                             passengerTemp={hvacState.passengerTemp}
@@ -685,7 +782,7 @@ function TeslaHVACApp() {
                             onToggle={toggleClimate}
                             disabled={false}
                         />
-                    </div>
+                    </GridWithOverlay>
                     
                     <StatusDisplay
                         hvacState={hvacState}
@@ -695,13 +792,13 @@ function TeslaHVACApp() {
             );
         } else if (activeTab === 'audio') {
             return (
-                <div className="controls-grid">
+                <GridWithOverlay>
                     <AudioControl
                         volume={audioState.volume}
                         onVolumeChange={setVolume}
                         disabled={false}
                     />
-                </div>
+                </GridWithOverlay>
             );
         }
         return null;

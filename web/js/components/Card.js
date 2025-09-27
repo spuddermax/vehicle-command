@@ -9,6 +9,12 @@ function Card({
     className = '',
     ...props 
 }) {
+    const [isExpanded, setIsExpanded] = useState(false);
+
+    const handleTitleClick = () => {
+        setIsExpanded(!isExpanded);
+    };
+
     const cardStyle = {
         borderColor: borderColor,
         backgroundColor: backgroundColor
@@ -16,12 +22,12 @@ function Card({
 
     return (
         <div 
-            className={`card ${className}`}
+            className={`card ${className} ${isExpanded ? 'expanded' : ''}`}
             style={cardStyle}
             {...props}
         >
             {title && (
-                <h2 className="card-title">{title}</h2>
+                <h2 className="card-title" onClick={handleTitleClick}>{title}</h2>
             )}
             <div className="card-content">
                 {children}
