@@ -331,6 +331,55 @@ html, body {
     text-transform: uppercase;
     letter-spacing: 1px;
     margin-bottom: var(--spacing-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: var(--spacing-xs);
+    border-radius: var(--radius-sm);
+}
+
+.card-title:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-accent);
+}
+
+.card.expanded {
+    transform: scale(2);
+    z-index: 1000;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    transition: transform 0.3s ease;
+    position: relative;
+    grid-column: 1 / -1;
+    grid-row: 1 / -1;
+    place-self: center;
+    width: 50%;
+    height: 50%;
+}
+
+.card.expanded .card-content {
+    transform: scale(1.0);
+}
+
+.controls-grid {
+    position: relative;
+}
+
+.grid-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    z-index: 999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.grid-overlay.active {
+    opacity: 1;
+    pointer-events: all;
 }
 
 /* Speedometer Styles */
@@ -753,6 +802,34 @@ html, body {
     width: 100%;
 }
 
+.temp-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: var(--spacing-xs);
+    width: 100%;
+}
+
+.temp-labels span {
+    font-family: var(--font-primary);
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 2px;
+    transition: all 0.1s ease;
+}
+
+.temp-labels span:hover {
+    color: var(--text-accent);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.temp-labels span:active {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(0.95);
+}
+
 .temp-slider {
     width: 100%;
     height: 8px;
@@ -770,8 +847,8 @@ html, body {
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: var(--text-accent);
-    border: 2px solid var(--bg-dark);
+    background: var(--bg-panel);
+    border: 2px solid var(--primary-blue);
     cursor: pointer;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
@@ -780,8 +857,8 @@ html, body {
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: var(--text-accent);
-    border: 2px solid var(--bg-dark);
+    background: var(--bg-panel);
+    border: 2px solid var(--primary-blue);
     cursor: pointer;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
@@ -981,8 +1058,14 @@ html, body {
     background: linear-gradient(90deg, var(--primary-green), var(--primary-blue));
 }
 
-.auto-toggle {
+.auto-buttons {
+    display: flex;
+    gap: var(--spacing-sm);
     width: 100%;
+}
+
+.auto-button {
+    flex: 1;
     background: var(--bg-medium);
     border: 2px solid var(--bg-light);
     border-radius: var(--radius-lg);
@@ -997,20 +1080,20 @@ html, body {
     box-shadow: var(--shadow-sm);
 }
 
-.auto-toggle:hover:not(:disabled) {
-    border-color: var(--primary-green);
+.auto-button:hover:not(:disabled) {
+    border-color: #8B5CF6;
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
 }
 
-.auto-toggle.active {
-    background: var(--primary-green);
-    border-color: var(--primary-green);
+.auto-button.active {
+    background: #8B5CF6;
+    border-color: #8B5CF6;
     color: var(--text-primary);
-    box-shadow: 0 0 20px var(--primary-green);
+    box-shadow: 0 0 20px #8B5CF6;
 }
 
-.auto-toggle:disabled {
+.auto-button:disabled {
     opacity: 0.4;
     cursor: not-allowed;
     transform: none;
@@ -1037,8 +1120,14 @@ html, body {
     background: linear-gradient(90deg, var(--primary-red), var(--primary-yellow));
 }
 
-.climate-button {
+.climate-buttons {
+    display: flex;
+    gap: var(--spacing-sm);
     width: 100%;
+}
+
+.climate-button {
+    flex: 1;
     background: var(--bg-medium);
     border: 2px solid var(--bg-light);
     border-radius: var(--radius-lg);
@@ -1054,16 +1143,16 @@ html, body {
 }
 
 .climate-button:hover:not(:disabled) {
-    border-color: var(--primary-red);
+    border-color: var(--primary-blue);
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
 }
 
 .climate-button.active {
-    background: var(--primary-red);
-    border-color: var(--primary-red);
+    background: var(--primary-blue);
+    border-color: var(--primary-blue);
     color: var(--text-primary);
-    box-shadow: 0 0 20px var(--primary-red);
+    box-shadow: 0 0 20px var(--primary-blue);
 }
 
 .climate-button:disabled {
