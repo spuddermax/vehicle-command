@@ -58,6 +58,74 @@
     --shadow-glow: 0 0 20px rgba(0, 255, 136, 0.3);
 }
 
+/* Brightness Overlay */
+.brightness-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0);
+    pointer-events: none;
+    z-index: 9999;
+    transition: background 0.1s ease;
+}
+
+.brightness-overlay.active {
+    pointer-events: all;
+}
+
+/* Absolutely Positioned Brightness Control */
+.brightness-control-absolute {
+    position: fixed;
+    bottom: 80px;
+    left: 94px;
+    width: 110px;
+    height: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: var(--spacing-sm);
+    background: var(--bg-medium);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--bg-light);
+    z-index: 10000;
+}
+
+
+/* Ensure brightness slider remains visible */
+.brightness-control {
+    position: relative;
+    z-index: 10002;
+    opacity: 1 !important;
+    filter: none !important;
+}
+
+.brightness-control * {
+    opacity: 1 !important;
+    filter: none !important;
+}
+
+/* Override brightness overlay for brightness control */
+.brightness-overlay {
+    pointer-events: none;
+}
+
+.brightness-overlay.active {
+    pointer-events: all;
+}
+
+/* Ensure brightness control is never affected by overlay */
+.brightness-control,
+.brightness-control *,
+.brightness-slider,
+.brightness-slider-container,
+.brightness-label {
+    opacity: 1 !important;
+    filter: none !important;
+    background: inherit !important;
+}
+
 /* Reset and Base Styles */
 * {
     box-sizing: border-box;
@@ -109,7 +177,7 @@ html, body {
     justify-content: space-between;
     align-items: stretch;
     padding: 0;
-    height: 80px;
+    height: 120px;
 }
 
 .app.landscape .header-content {
@@ -145,6 +213,62 @@ html, body {
 
 .app.landscape .logo-subtitle {
     text-align: center;
+}
+
+
+.brightness-slider-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-xs);
+    height: 100%;
+    justify-content: center;
+}
+
+.brightness-slider {
+    width: 8px;
+    height: 100%;
+    background: var(--bg-light);
+    border-radius: 4px;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
+    border: 1px solid var(--primary-blue);
+    writing-mode: bt-lr; /* IE */
+    -webkit-appearance: slider-vertical; /* WebKit */
+}
+
+.brightness-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 60px;
+    height: 60px;
+    background: var(--primary-blue);
+    border: 2px solid var(--bg-panel);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transform: rotate(90deg);
+}
+
+.brightness-slider::-moz-range-thumb {
+    width: 60px;
+    height: 60px;
+    background: var(--primary-blue);
+    border: 2px solid var(--bg-panel);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transform: rotate(90deg);
+}
+
+.brightness-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-secondary);
+    font-weight: 600;
+    letter-spacing: 1px;
 }
 
 .connection-status {
@@ -335,11 +459,29 @@ html, body {
     transition: all 0.2s ease;
     padding: var(--spacing-xs);
     border-radius: var(--radius-sm);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.card-title-text {
+    flex: 1;
+}
+
+.card-expand-icon {
+    font-size: 16px;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
 }
 
 .card-title:hover {
     background: rgba(255, 255, 255, 0.1);
     color: var(--text-accent);
+}
+
+.card-title:hover .card-expand-icon {
+    opacity: 1;
 }
 
 .card.expanded {
