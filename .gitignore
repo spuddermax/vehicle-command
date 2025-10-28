@@ -11,3 +11,9 @@ examples/ble/ble
 *.DS_Store
 *.key
 config
+
+# Compiled binaries
+main
+tesla-keygen
+tesla-control
+tesla-http-proxy
