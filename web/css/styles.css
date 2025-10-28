@@ -1451,6 +1451,18 @@ body {
 	box-shadow: 0 0 20px var(--primary-blue);
 }
 
+.climate-button.climate-auto.active {
+	background: var(--primary-green);
+	border-color: var(--primary-green);
+	box-shadow: 0 0 20px var(--primary-green);
+}
+
+.climate-button.climate-auto:hover:not(:disabled) {
+	border-color: var(--primary-green);
+	transform: translateY(-2px);
+	box-shadow: var(--shadow-md);
+}
+
 .climate-button:disabled {
 	opacity: 0.4;
 	cursor: not-allowed;

@@ -742,53 +742,54 @@ function AirflowControl({
 	);
 }
 
-// Auto Mode Control Component
-function AutoModeControl({ autoMode, onToggle, disabled }) {
-	return (
-		<Card title="AUTO MODE" className="auto-control">
-			<div className="auto-buttons">
-				<button
-					className={`auto-button auto-on ${
-						autoMode ? "active" : ""
-					}`}
-					onClick={() => onToggle(true)}
-					disabled={disabled}>
-					<div className="auto-icon">🔄</div>
-					<div className="auto-label">ON</div>
-				</button>
-				<button
-					className={`auto-button auto-off ${
-						!autoMode ? "active" : ""
-					}`}
-					onClick={() => onToggle(false)}
-					disabled={disabled}>
-					<div className="auto-icon">⏸️</div>
-					<div className="auto-label">OFF</div>
-				</button>
-			</div>
-		</Card>
-	);
-}
-
 // Climate Toggle Component
-function ClimateToggle({ isOn, onToggle, disabled }) {
+function ClimateToggle({ isOn, autoMode, onToggle, disabled }) {
+	const getCurrentState = () => {
+		if (!isOn) return "off";
+		if (autoMode) return "auto";
+		return "on";
+	};
+
+	const currentState = getCurrentState();
+
+	const handleStateChange = (newState) => {
+		if (disabled) return;
+
+		if (newState === "off") {
+			onToggle(false, false); // isOn: false, autoMode: false
+		} else if (newState === "on") {
+			onToggle(true, false); // isOn: true, autoMode: false
+		} else if (newState === "auto") {
+			onToggle(true, true); // isOn: true, autoMode: true
+		}
+	};
+
 	return (
 		<Card title="CLIMATE SYSTEM" className="climate-toggle">
 			<div className="climate-buttons">
 				<button
 					className={`climate-button climate-on ${
-						isOn ? "active" : ""
+						currentState === "on" ? "active" : ""
 					}`}
-					onClick={() => onToggle(true)}
+					onClick={() => handleStateChange("on")}
 					disabled={disabled}>
 					<div className="climate-icon">🌡️</div>
 					<div className="climate-label">ON</div>
 				</button>
 				<button
-					className={`climate-button climate-off ${
-						!isOn ? "active" : ""
+					className={`climate-button climate-auto ${
+						currentState === "auto" ? "active" : ""
 					}`}
-					onClick={() => onToggle(false)}
+					onClick={() => handleStateChange("auto")}
+					disabled={disabled}>
+					<div className="climate-icon">🔄</div>
+					<div className="climate-label">AUTO</div>
+				</button>
+				<button
+					className={`climate-button climate-off ${
+						currentState === "off" ? "active" : ""
+					}`}
+					onClick={() => handleStateChange("off")}
 					disabled={disabled}>
 					<div className="climate-icon">⭕</div>
 					<div className="climate-label">OFF</div>
@@ -1001,35 +1002,15 @@ function TeslaHVACApp() {
 		[connectionStatus]
 	);
 
-	const toggleAutoMode = useCallback(
-		async (autoMode) => {
-			if (connectionStatus !== "connected") return;
-
-			// Update UI immediately for instant feedback
-			setHvacState((prev) => ({
-				...prev,
-				autoMode: autoMode,
-			}));
-
-			// Send to backend in background (no loading state)
-			try {
-				// Simulate API call without blocking UI
-				await new Promise((resolve) => setTimeout(resolve, 50));
-			} catch (err) {
-				setError("Failed to set auto mode");
-			}
-		},
-		[connectionStatus]
-	);
-
 	const toggleClimate = useCallback(
-		async (isOn) => {
+		async (isOn, autoMode) => {
 			if (connectionStatus !== "connected") return;
 
 			// Update UI immediately for instant feedback
 			setHvacState((prev) => ({
 				...prev,
 				isOn: isOn,
+				autoMode: autoMode,
 			}));
 
 			// Send to backend in background (no loading state)
@@ -1097,14 +1078,9 @@ function TeslaHVACApp() {
 							disabled={!hvacState.isOn}
 						/>
 
-						<AutoModeControl
-							autoMode={hvacState.autoMode}
-							onToggle={toggleAutoMode}
-							disabled={!hvacState.isOn}
-						/>
-
 						<ClimateToggle
 							isOn={hvacState.isOn}
+							autoMode={hvacState.autoMode}
 							onToggle={toggleClimate}
 							disabled={false}
 						/>
