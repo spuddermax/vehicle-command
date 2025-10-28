@@ -343,6 +343,14 @@ func (h *APIHandler) handleAirflow(w http.ResponseWriter, r *http.Request) {
 		pattern = tesla.AirflowFeet
 	case "defrost":
 		pattern = tesla.AirflowDefrost
+	case "feet-face":
+		pattern = tesla.AirflowFaceFeet
+	case "feet-defrost":
+		pattern = tesla.AirflowFeetDefrost
+	case "face-defrost":
+		pattern = tesla.AirflowFaceDefrost
+	case "face-feet-defrost":
+		pattern = tesla.AirflowFaceFeetDefrost
 	case "auto":
 		pattern = tesla.AirflowAuto
 	default:
